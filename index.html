@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>StrataDB — a SQL database engine built from scratch</title>
+    <meta
+      name="description"
+      content="A relational database engine written from scratch in TypeScript: SQL parser, query planner, B+tree indexes and transactions, running entirely in your browser."
+    />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2314171d'/%3E%3Cpath d='M6 11l10-5 10 5-10 5z' fill='%23f2a65a'/%3E%3Cpath d='M6 16l10 5 10-5' fill='none' stroke='%23d98a3d' stroke-width='2.2' stroke-linejoin='round'/%3E%3Cpath d='M6 21l10 5 10-5' fill='none' stroke='%23a8642a' stroke-width='2.2' stroke-linejoin='round'/%3E%3C/svg%3E" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <svg class="logo" viewBox="0 0 32 32" aria-hidden="true">
+          <path d="M4 10l12-6 12 6-12 6z" fill="var(--accent)" />
+          <path d="M4 16l12 6 12-6" fill="none" stroke="var(--accent-2)" stroke-width="2.4" stroke-linejoin="round" />
+          <path d="M4 22l12 6 12-6" fill="none" stroke="var(--accent-3)" stroke-width="2.4" stroke-linejoin="round" />
+        </svg>
+        <div>
+          <h1>StrataDB</h1>
+          <p>A SQL database engine written from scratch, running in your browser</p>
+        </div>
+      </div>
+      <nav class="views" role="tablist" aria-label="Views">
+        <button role="tab" id="tab-playground" aria-selected="true" data-view="playground">SQL playground</button>
+        <button role="tab" id="tab-btree" aria-selected="false" data-view="btree">B+tree lab</button>
+      </nav>
+      <a class="repo" href="https://github.com/nuhanhabib/stratadb" target="_blank" rel="noopener">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0a8 8 0 0 0-2.53 15.59c.4.07.55-.17.55-.38v-1.33c-2.23.48-2.7-1.07-2.7-1.07-.36-.93-.89-1.17-.89-1.17-.73-.5.05-.49.05-.49.8.06 1.23.83 1.23.83.72 1.22 1.88.87 2.33.66.07-.52.28-.87.5-1.07-1.77-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.28.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48v2.19c0 .21.15.46.55.38A8 8 0 0 0 8 0z"/></svg>
+        Source
+      </a>
+    </header>
+
+    <main id="view-playground" class="playground" role="tabpanel" aria-labelledby="tab-playground">
+      <aside class="sidebar">
+        <section>
+          <h2>Schema</h2>
+          <div id="schema" class="schema"></div>
+        </section>
+        <section>
+          <h2>Examples</h2>
+          <div id="examples" class="examples"></div>
+        </section>
+      </aside>
+
+      <section class="workspace">
+        <div class="editor-panel">
+          <div class="editor" id="editor">
+            <pre id="highlight" aria-hidden="true"></pre>
+            <textarea id="sql" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="SQL editor"></textarea>
+          </div>
+          <div class="toolbar">
+            <button id="run" class="primary">
+              <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 1l9 5-9 5z" fill="currentColor"/></svg>
+              Run <kbd id="run-key">Ctrl ↵</kbd>
+            </button>
+            <button id="reset" title="Discard all changes and reload the sample dataset">Reset database</button>
+            <span id="status" class="status"></span>
+          </div>
+        </div>
+
+        <div class="output-panel">
+          <div class="tabs" role="tablist" aria-label="Output">
+            <button role="tab" id="tab-results" aria-selected="true" data-output="results">Results</button>
+            <button role="tab" id="tab-plan" aria-selected="false" data-output="plan">Query plan</button>
+          </div>
+          <div id="output-results" class="output" role="tabpanel" aria-labelledby="tab-results" tabindex="0"></div>
+          <div id="output-plan" class="output" role="tabpanel" aria-labelledby="tab-plan" tabindex="0" hidden></div>
+        </div>
+      </section>
+    </main>
+
+    <main id="view-btree" class="btree-view" role="tabpanel" aria-labelledby="tab-btree" hidden>
+      <div class="btree-intro">
+        <h2>B+tree lab</h2>
+        <p>
+          This is the exact data structure behind every StrataDB index, shown with a tiny node size so
+          you can watch it work. Insert keys to see nodes split and the tree grow upward; delete them
+          to see nodes borrow from siblings and merge.
+        </p>
+      </div>
+      <div class="btree-controls">
+        <label>Key <input id="bt-key" type="number" inputmode="numeric" placeholder="42" /></label>
+        <button id="bt-insert" class="primary">Insert</button>
+        <button id="bt-delete">Delete</button>
+        <span class="sep"></span>
+        <button id="bt-random">Insert 10 random</button>
+        <button id="bt-sequence">Insert next 10 in order</button>
+        <button id="bt-clear">Clear</button>
+        <span class="sep"></span>
+        <label>Max children per node
+          <select id="bt-order">
+            <option>3</option><option selected>4</option><option>5</option><option>6</option>
+          </select>
+        </label>
+      </div>
+      <p id="bt-caption" class="btree-caption" aria-live="polite"></p>
+      <div id="bt-canvas" class="btree-canvas"></div>
+      <div class="btree-legend">
+        <span><i class="swatch internal"></i> internal node: separator keys only</span>
+        <span><i class="swatch leaf"></i> leaf node: holds the entries, linked left to right</span>
+        <span><i class="swatch path"></i> path taken by the last operation</span>
+      </div>
+    </main>
+
+    <script type="module" src="/src/ui/main.ts"></script>
+  </body>
+</html>
